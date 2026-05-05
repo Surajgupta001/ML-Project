@@ -108,6 +108,40 @@ ML-Project/
 
 The system evaluates multiple regression models (Random Forest, Decision Tree, Gradient Boosting, Linear Regression, XGBoost, CatBoost, AdaBoost) and automatically selects the best performer. The current best model achieves an **R2 Score of ~0.88**.
 
+## ♾️ Continuous Integration & Deployment (CI/CD)
+
+The project includes a robust, production-ready CI/CD pipeline built using **GitHub Actions**, deploying automatically to an **AWS EC2** instance via **Amazon ECR (Elastic Container Registry)**.
+
+```mermaid
+graph LR
+    Push[git push main] --> CI[Continuous Integration]
+    CI --> CDelivery[Continuous Delivery: AWS ECR]
+    CDelivery --> CDeploy[Continuous Deployment: self-hosted EC2]
+```
+
+### 📦 1. Continuous Delivery (Build & Push to ECR)
+On every push to the `main` branch, the workflow:
+- Logs in securely to Amazon ECR.
+- Builds a lightweight, optimized Docker image using `python:3.10-slim-bookworm`.
+- Tags and pushes the image directly to your private ECR repository (`studentperformance`).
+
+### 🚀 2. Continuous Deployment (Pull & Serve on EC2)
+Once the image is pushed, the **self-hosted EC2 runner** automatically:
+- Signs in to ECR and pulls the newest `latest` image.
+- Gracefully stops and cleans up any old `mltest` containers already running.
+- Spawns a new background Docker container mapping port `8080:8080` to serve real-time predictions.
+- Automatically cleans up dangling images (`docker system prune -f`) to save server storage.
+
+### 🔑 Required GitHub Secrets
+To activate the automatic deployment, set the following secrets in **Settings > Secrets and variables > Actions**:
+
+| Secret Name | Description | Example Value |
+| :--- | :--- | :--- |
+| `AWS_ACCESS_KEY_ID` | Your AWS IAM Access Key ID | `AKIAIOSFODNN7EXAMPLE` |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS IAM Secret Access Key | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` |
+| `AWS_REGION` | The AWS region hosting ECR & EC2 | `ap-south-1` |
+| `ECR_REPOSITORY_NAME` | The target ECR repository name | `studentperformance` |
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
