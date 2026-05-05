@@ -16,5 +16,4 @@ logs/
 catboost_info/
 notebook/
 mlproject.egg-info/
-setup.py
 README.md
